@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  booking-deployment
+  labels:
+    name:  booking-pods
+spec:
+  progressDeadlineSeconds: 2
+  revisionHistoryLimit: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 1
+  minReadySeconds: 0
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "booking-app"
+      version: 0.0.1
+  template:
+    metadata:
+      name: "booking-app-pod"
+      namespace: "guru-namespace"
+      labels:
+        app: "booking-app"
+        version: 0.0.1
+    spec:
+      containers:
+        - image: guru/booking:1.0
+          name: guru-booking-container
+          ports:
+            - name: "http"
+              containerPort: 8081
+          imagePullPolicy: Never
+          livenessProbe:
+            httpGet:
+              path: "/bookTicket"
+              port: 8181
+            failureThreshold: 3
+            initialDelaySeconds: 230
+            periodSeconds: 120
+            successThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: "/bookTicket"
+              port: 8181
+            failureThreshold: 3
+            initialDelaySeconds: 180
+            periodSeconds: 100
+            successThreshold: 1
+          resources:
+            limits:
+              cpu: 320m
+              memory: 512Mi
+            requests:
+              cpu: 320m
+              memory: 512Mi
